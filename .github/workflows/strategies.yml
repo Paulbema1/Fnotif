@@ -11,6 +11,14 @@ on:
         options:
           - "no"
           - "yes"
+      spread:
+        description: "Frais (spread) : normal, ou zero pour un test sans frais"
+        required: true
+        default: "normal"
+        type: choice
+        options:
+          - "normal"
+          - "zero"
 
 jobs:
   run:
@@ -29,4 +37,5 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           SHOW_FINAL: ${{ inputs.final }}
+          SPREAD: ${{ inputs.spread }}
         run: python -u strategies.py
