@@ -17,6 +17,8 @@ DB = os.environ.get("DATABASE_URL", "")
 if not DB:
     sys.exit("ERREUR : DATABASE_URL manquant (Secrets GitHub).")
 SHOW_FINAL = os.environ.get("SHOW_FINAL", "no").strip().lower() in ("yes", "oui", "1", "true")
+# SPREAD=zero : meme test mais sans frais, pour mesurer l'avantage brut du signal
+SPREAD_FACTOR = 0.0 if os.environ.get("SPREAD", "normal").strip().lower() in ("zero", "0") else 1.0
 
 SPREADS = {"XAU/USD": 0.55, "BTC/USD": 30.0, "GBP/JPY": 0.03}
 NAMES = {"XAU/USD": "GOLD", "BTC/USD": "BTCUSD", "GBP/JPY": "GBPJPY"}
@@ -294,7 +296,7 @@ for sym in ("XAU/USD", "BTC/USD", "GBP/JPY"):
         lines.append("%s : pas assez de bougies." % NAMES[sym])
         continue
     F = features(df)
-    spr = SPREADS[sym]
+    spr = SPREADS[sym] * SPREAD_FACTOR
     name = NAMES[sym]
     print("Calcul de", name, flush=True)
 
@@ -330,6 +332,8 @@ for sym in ("XAU/USD", "BTC/USD", "GBP/JPY"):
 head = ("TEST DES STRATEGIES (R moyen apres spread, 1R = risque du trade)\n"
         "Periodes : REGLAGE 2020-2022, VALID 2023-2024%s\n\n" % (", FINAL 2025-2026 (affiche)" if SHOW_FINAL else
                                                                   " (2025-2026 cache : sert au test final)"))
+if SPREAD_FACTOR == 0:
+    head = "*** TEST SANS FRAIS (spread = 0) : mesure l'avantage brut du signal ***\n" + head
 text = head + "CONTROLE DU SIMULATEUR (doit etre proche de 0) :\n" + "\n".join(control) + "\n\n" + "\n".join(lines) + "\n\n"
 if cands:
     cands.sort(reverse=True)
@@ -347,4 +351,4 @@ if sf:
     with open(sf, "a", encoding="utf-8") as f:
         f.write("```\n" + text + "\n```\n")
 telegram(text)
-                         
+    
