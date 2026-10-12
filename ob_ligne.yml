@@ -1,0 +1,41 @@
+name: Test OB et ligne de tendance
+
+on:
+  workflow_dispatch:
+    inputs:
+      final:
+        description: "Afficher la periode FINALE 2025-2026 ? (une seule fois, apres avoir choisi)"
+        required: true
+        default: "no"
+        type: choice
+        options:
+          - "no"
+          - "yes"
+      spread:
+        description: "Frais (spread) : normal, ou zero pour un test sans frais"
+        required: true
+        default: "normal"
+        type: choice
+        options:
+          - "normal"
+          - "zero"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Installer les dependances
+        run: pip install -r requirements.txt
+      - name: Lancer le test
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SHOW_FINAL: ${{ inputs.final }}
+          SPREAD: ${{ inputs.spread }}
+        run: python -u ob_ligne.py
